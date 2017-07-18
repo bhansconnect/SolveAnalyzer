@@ -1,4 +1,4 @@
-#Rubik's Cube Solve Analyzer
+# Rubik's Cube Solve Analyzer
 
 Just run the .exe and follow the instructions.
  
