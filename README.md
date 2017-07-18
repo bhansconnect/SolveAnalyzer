@@ -1,6 +1,6 @@
 # Rubik's Cube Solve Analyzer
 
-[Download the latest code!](https://github.com/bhansconnect/SolveAnalyzer/releases)
+[Download the latest version!](https://github.com/bhansconnect/SolveAnalyzer/releases)
 
 Just run the .exe and follow the instructions.
  
