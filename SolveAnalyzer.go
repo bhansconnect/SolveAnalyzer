@@ -59,8 +59,9 @@ func main() {
 	}
 	fmt.Println("Save Extension: ", saveas)
 
-	fmt.Println("Generating plots")
+
 	processFile(filename, trailingComma, method, vg.Points(1000), saveas)
+	fmt.Println("Generating plots")
 	fmt.Println("Plots generated and saved")
 	fmt.Println("Press enter to close...")
 	fmt.Scanln()
@@ -71,6 +72,7 @@ func processFile(filename string, trailingComma bool, method string, size vg.Len
 	defer f.Close()
 	check(err)
 	numSolves, err := lineCounter(f)
+	fmt.Printf("Analyzing %d solves\n",numSolves)
 	check(err)
 	_, err = f.Seek(0, 0)
 	check(err)
@@ -96,6 +98,7 @@ func processFile(filename string, trailingComma bool, method string, size vg.Len
 	}
 	re := regexp.MustCompile("[^a-zA-Z]+")
 
+	fmt.Printf("Each solves has %d steps\n",numSteps)
 	for i := 0; i < numSolves; i++ {
 		line, _, err := reader.ReadLine()
 		check(err)
@@ -115,6 +118,37 @@ func processFile(filename string, trailingComma bool, method string, size vg.Len
 			}
 		}
 	}
+
+	skipchance := float64(1)
+	skipcount := 0
+	skipprobs := make([]float64, numSteps)
+	for j := 0; j < numSteps; j++ {
+		for i := 0; i < numSolves; i++ {
+			if(movecounts[j][i] == 0) {
+				skipcount++
+			}
+		}
+		skipprobs[j] = (float64(skipcount)/float64(numSolves))
+		skipchance *= 1-skipprobs[j]
+		fmt.Printf("Chance of skipping step %d: %0.4f%%\n", (j+1), 100*skipprobs[j])
+	}
+	skipchance = (1 - skipchance)
+	fmt.Printf("Chance of skipping a single step: %0.4f%%\n", 100*skipchance)
+	doubleskip := float64(0)
+	for i := 0; i < numSteps; i++ {
+		prob := float64(1)
+		for j := i+1; j < numSteps; j++ {
+			for k := 0; k < numSteps; k++ {
+				if(k == i || k == j){
+					prob *= skipprobs[k]
+				}else{
+					prob *= 1-skipprobs[k]
+				}
+			}
+			doubleskip += prob
+		}
+	}
+	fmt.Printf("Chance of skipping any two step: %0.4f%%\n", 100*doubleskip)
 
 	tp, err := hplot.NewTiledPlot(draw.Tiles{Cols: numSteps+1, Rows: 1})
 	if err != nil {
@@ -182,7 +216,7 @@ func processFile(filename string, trailingComma bool, method string, size vg.Len
 		check(err)
 	}
 
-	for num, _ := range movecounts{
+	for num := range movecounts{
 
 		var sum float64
 		reversemap := make(map[int]string, len(moves[num]))
